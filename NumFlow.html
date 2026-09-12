@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NumFlow!</title>
+
+  <!-- Web App & ホーム画面追加用設定 -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="NumFlow!">
+  <meta name="application-name" content="NumFlow!">
+  
+  <!-- イカ＆インク飛び散り風アイコン（Data URI） -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%238300ff'/><path d='M20 25 Q10 15 25 10 Q40 20 30 30 Z' fill='%2300f0ff'/><path d='M80 75 Q90 85 75 90 Q60 80 70 70 Z' fill='%23ff007f'/><circle cx='82' cy='22' r='7' fill='%2300ff66'/><path d='M50 15 C30 15 25 35 25 55 C25 70 35 78 35 85 C35 88 30 90 28 92 C35 92 42 88 45 82 C47 88 53 88 55 82 C58 88 65 92 72 92 C70 90 65 88 65 85 C65 78 75 70 75 55 C75 35 70 15 50 15 Z' fill='%23f0f000' stroke='%23000' stroke-width='3'/><circle cx='40' cy='45' r='7' fill='%23fff' stroke='%23000' stroke-width='2'/><circle cx='60' cy='45' r='7' fill='%23fff' stroke='%23000' stroke-width='2'/><circle cx='42' cy='45' r='3' fill='%23000'/><circle cx='58' cy='45' r='3' fill='%23000'/></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%238300ff'/><path d='M20 25 Q10 15 25 10 Q40 20 30 30 Z' fill='%2300f0ff'/><path d='M80 75 Q90 85 75 90 Q60 80 70 70 Z' fill='%23ff007f'/><circle cx='82' cy='22' r='7' fill='%2300ff66'/><path d='M50 15 C30 15 25 35 25 55 C25 70 35 78 35 85 C35 88 30 90 28 92 C35 92 42 88 45 82 C47 88 53 88 55 82 C58 88 65 92 72 92 C70 90 65 88 65 85 C65 78 75 70 75 55 C75 35 70 15 50 15 Z' fill='%23f0f000' stroke='%23000' stroke-width='3'/><circle cx='40' cy='45' r='7' fill='%23fff' stroke='%23000' stroke-width='2'/><circle cx='60' cy='45' r='7' fill='%23fff' stroke='%23000' stroke-width='2'/><circle cx='42' cy='45' r='3' fill='%23000'/><circle cx='58' cy='45' r='3' fill='%23000'/></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --splat-yellow: #f0f000;
+      --splat-purple: #8300ff;
+      --splat-pink: #ff007f;
+      --splat-neon-green: #00ff66;
+      --splat-cyan: #00f0ff;
+      --splat-dark: #12121c;
+      --splat-card: #1d1b2e;
+      --splat-text: #ffffff;
+      --splat-shadow: #000000;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'M PLUS Rounded 1c', 'Fredoka', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--splat-dark);
+      color: var(--splat-text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(131, 0, 255, 0.35) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(240, 240, 0, 0.25) 0%, transparent 45%),
+        radial-gradient(circle at 80% 20%, rgba(255, 0, 127, 0.2) 0%, transparent 35%);
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      top: -50px;
+      left: -50px;
+      width: 200px;
+      height: 200px;
+      background: var(--splat-purple);
+      border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+      transform: rotate(-15deg);
+      opacity: 0.6;
+      z-index: 0;
+      filter: blur(10px);
+    }
+
+    body::after {
+      content: "";
+      position: absolute;
+      bottom: -60px;
+      right: -40px;
+      width: 250px;
+      height: 250px;
+      background: var(--splat-yellow);
+      border-radius: 60% 40% 30% 70% / 50% 30% 70% 50%;
+      transform: rotate(25deg);
+      opacity: 0.4;
+      z-index: 0;
+      filter: blur(12px);
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 440px;
+      background: var(--splat-card);
+      border: 5px solid #000;
+      border-radius: 36px;
+      padding: 24px;
+      box-shadow: 10px 10px 0px var(--splat-shadow), 0 0 30px rgba(131, 0, 255, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+      z-index: 1;
+      transform: rotate(-0.5deg);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .app-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      color: var(--splat-yellow);
+      text-shadow: 4px 4px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000;
+      transform: rotate(-3deg);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .app-title span {
+      color: var(--splat-cyan);
+    }
+
+    .badge {
+      font-size: 0.9rem;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: var(--splat-pink);
+      color: #fff;
+      border: 3px solid #000;
+      box-shadow: 3px 3px 0px #000;
+      transform: rotate(4deg);
+    }
+
+    .total-card {
+      background: var(--splat-purple);
+      border: 5px solid #000;
+      border-radius: 28px;
+      padding: 22px 18px;
+      text-align: center;
+      position: relative;
+      box-shadow: 6px 6px 0px #000;
+      overflow: hidden;
+      transform: rotate(1deg);
+      transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+    }
+
+    .total-card:active {
+      transform: scale(0.97) rotate(1deg);
+    }
+
+    .total-card::before {
+      content: "TOTAL (TAP TO COPY)";
+      position: absolute;
+      top: 6px;
+      left: 16px;
+      font-size: 0.75rem;
+      font-weight: 900;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 1.5px;
+    }
+
+    .total-card.pulse {
+      transform: scale(1.04) rotate(-1deg);
+    }
+
+    .total-value-wrapper {
+      margin-top: 10px;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .currency {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--splat-yellow);
+      text-shadow: 3px 3px 0px #000;
+    }
+
+    .total-value {
+      font-size: 3.2rem;
+      font-weight: 900;
+      color: var(--splat-yellow);
+      text-shadow: 5px 5px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000;
+      line-height: 1;
+      word-break: break-all;
+      font-family: 'Fredoka', 'M PLUS Rounded 1c', sans-serif;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      background: #0d0c1d;
+      border: 4px solid #000;
+      border-radius: 24px;
+      padding: 16px;
+      color: var(--splat-neon-green);
+      font-size: 1.2rem;
+      font-weight: 800;
+      line-height: 1.5;
+      resize: none;
+      outline: none;
+      box-shadow: inset 4px 4px 10px rgba(0,0,0,0.7), 4px 4px 0px #000;
+      font-family: 'Fredoka', 'M PLUS Rounded 1c', sans-serif;
+      user-select: text;
+    }
+
+    textarea::placeholder {
+      color: rgba(255, 255, 255, 0.25);
+      font-weight: 700;
+    }
+
+    textarea:focus {
+      border-color: var(--splat-cyan);
+      box-shadow: inset 4px 4px 10px rgba(0,0,0,0.7), 0 0 15px rgba(0, 240, 255, 0.5), 4px 4px 0px #000;
+    }
+
+    .preview-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .preview-title {
+      font-size: 0.85rem;
+      font-weight: 900;
+      color: var(--splat-cyan);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 100px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+
+    .tags-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .tags-container::-webkit-scrollbar-thumb {
+      background: var(--splat-pink);
+      border-radius: 10px;
+      border: 2px solid #000;
+    }
+
+    .tag {
+      font-size: 0.95rem;
+      font-weight: 900;
+      padding: 6px 14px;
+      border-radius: 14px;
+      background: var(--splat-neon-green);
+      color: #000;
+      border: 3px solid #000;
+      box-shadow: 3px 3px 0px #000;
+      animation: popSplat 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: inline-block;
+      transform: rotate(-2deg);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .tag:hover {
+      transform: scale(1.08) rotate(0deg);
+    }
+
+    .tag:active {
+      transform: scale(0.95);
+    }
+
+    .tag:nth-child(even) {
+      transform: rotate(2deg);
+      background: var(--splat-yellow);
+    }
+
+    .tag.negative {
+      background: var(--splat-pink);
+      color: #fff;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 5px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 20px;
+      border: 4px solid #000;
+      font-weight: 900;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.1s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 4px 4px 0px #000;
+      text-shadow: 1px 1px 0px #000;
+    }
+
+    .btn-clear {
+      background: var(--splat-pink);
+      color: #fff;
+    }
+
+    .btn-clear:hover {
+      background: #ff2a95;
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #000;
+    }
+
+    .btn-clear:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #000;
+    }
+
+    /* トースト通知（コピー完了表示） */
+    .toast {
+      position: absolute;
+      top: -45px;
+      left: 50%;
+      transform: translateX(-50%) scale(0.8);
+      background: var(--splat-neon-green);
+      color: #000;
+      border: 3px solid #000;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-weight: 900;
+      font-size: 0.9rem;
+      box-shadow: 3px 3px 0px #000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 20;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+      top: -35px;
+    }
+
+    @keyframes popSplat {
+      0% { opacity: 0; transform: scale(0.3) rotate(-10deg); }
+      70% { transform: scale(1.15) rotate(5deg); }
+      100% { opacity: 1; transform: scale(1) rotate(-2deg); }
+    }
+
+    #splat-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="splat-canvas"></canvas>
+
+  <div class="app-container">
+    <div class="toast" id="toast">COPIED!</div>
+
+    <div class="header">
+      <h1 class="app-title">Num<span>Flow!</span></h1>
+      <span class="badge" id="count-badge">0 ITEMS</span>
+    </div>
+
+    <div class="total-card" id="total-card">
+      <div class="total-value-wrapper">
+        <span class="currency">￥</span>
+        <span class="total-value" id="total-amount">0</span>
+      </div>
+    </div>
+
+    <div class="input-wrapper">
+      <textarea 
+        id="number-input" 
+        placeholder="数字を入力してね！&#10;例:&#10;1200&#10;1,500&#10;￥3000&#10;-500円"
+        spellcheck="false"
+      ></textarea>
+    </div>
+
+    <div class="preview-section">
+      <div class="preview-title">
+        <span>▼ 検出された数値 (タップでカーソル移動)</span>
+      </div>
+      <div class="tags-container" id="tags-container"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-clear" id="clear-btn">
+        リセット！
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const inputEl = document.getElementById('number-input');
+    const totalAmountEl = document.getElementById('total-amount');
+    const totalCardEl = document.getElementById('total-card');
+    const tagsContainerEl = document.getElementById('tags-container');
+    const countBadgeEl = document.getElementById('count-badge');
+    const clearBtn = document.getElementById('clear-btn');
+    const toastEl = document.getElementById('toast');
+    const canvas = document.getElementById('splat-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let currentTotal = 0;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const splats = [];
+    const colors = ['#f0f000', '#8300ff', '#ff007f', '#00ff66', '#00f0ff'];
+
+    function createSplat(x, y) {
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const numParticles = 12 + Math.floor(Math.random() * 8);
+      for (let i = 0; i < numParticles; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 3 + Math.random() * 9;
+        splats.push({
+          x: x,
+          y: y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          size: 6 + Math.random() * 12,
+          color: color,
+          alpha: 1,
+          decay: 0.03 + Math.random() * 0.03
+        });
+      }
+    }
+
+    function drawSplats() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = splats.length - 1; i >= 0; i--) {
+        const s = splats[i];
+        s.x += s.vx;
+        s.y += s.vy;
+        s.size *= 0.95;
+        s.alpha -= s.decay;
+
+        if (s.alpha <= 0) {
+          splats.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = s.alpha;
+        ctx.fillStyle = s.color;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      requestAnimationFrame(drawSplats);
+    }
+    drawSplats();
+
+    function parseValue(line) {
+      if (!line.trim()) return null;
+      let clean = line.replace(/[Ａ-Ｚａ-ｚ０-９]/g, (s) => 
+        String.fromCharCode(s.charCodeAt(0) - 0xFEE0)
+      );
+      clean = clean.replace(/[,円￥\s]/g, '');
+      const num = parseFloat(clean);
+      return isNaN(num) ? null : num;
+    }
+
+    function animateValue(start, end, duration) {
+      if (start === end) return;
+      const startTime = performance.now();
+
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+        const current = start + (end - start) * easeProgress;
+        
+        totalAmountEl.textContent = Math.round(current).toLocaleString();
+
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        } else {
+          totalAmountEl.textContent = end.toLocaleString();
+        }
+      }
+      requestAnimationFrame(update);
+    }
+
+    function processInput() {
+      const text = inputEl.value;
+      const lines = text.split('\n');
+      const validNumbers = [];
+      let newTotal = 0;
+      let currentPos = 0;
+
+      tagsContainerEl.innerHTML = '';
+
+      lines.forEach((line, index) => {
+        const lineStart = currentPos;
+        const lineEnd = currentPos + line.length;
+        currentPos = lineEnd + 1; // \n の分を加算
+
+        const val = parseValue(line);
+        if (val !== null) {
+          validNumbers.push(val);
+          newTotal += val;
+
+          const tag = document.createElement('div');
+          tag.className = `tag ${val < 0 ? 'negative' : ''}`;
+          tag.textContent = (val > 0 ? '+' : '') + val.toLocaleString();
+
+          // 検出数値のタグをタップした時のカーソル移動処理
+          tag.addEventListener('click', () => {
+            inputEl.focus();
+            inputEl.setSelectionRange(lineStart, lineEnd);
+
+            // 該当箇所の行へスクロールさせる計算
+            const lineHeight = 1.2 * 16 * 1.5; // font-size: 1.2rem, line-height: 1.5
+            inputEl.scrollTop = index * lineHeight - 20;
+
+            const rect = tag.getBoundingClientRect();
+            createSplat(rect.left + rect.width / 2, rect.top + rect.height / 2);
+          });
+
+          tagsContainerEl.appendChild(tag);
+        }
+      });
+
+      countBadgeEl.textContent = `${validNumbers.length} ITEMS`;
+
+      if (newTotal !== currentTotal) {
+        animateValue(currentTotal, newTotal, 300);
+        currentTotal = newTotal;
+
+        totalCardEl.classList.remove('pulse');
+        void totalCardEl.offsetWidth;
+        totalCardEl.classList.add('pulse');
+
+        const rect = totalCardEl.getBoundingClientRect();
+        createSplat(rect.left + rect.width / 2, rect.top + rect.height / 2);
+
+        if (navigator.vibrate) {
+          navigator.vibrate(15);
+        }
+      }
+    }
+
+    // TOTALタップでクリップボードへコピー
+    totalCardEl.addEventListener('click', () => {
+      const valText = currentTotal.toString();
+      navigator.clipboard.writeText(valText).then(() => {
+        toastEl.classList.add('show');
+        setTimeout(() => toastEl.classList.remove('show'), 1500);
+
+        const rect = totalCardEl.getBoundingClientRect();
+        createSplat(rect.left + rect.width / 2, rect.top + rect.height / 2);
+
+        if (navigator.vibrate) {
+          navigator.vibrate([20, 40, 20]);
+        }
+      });
+    });
+
+    inputEl.addEventListener('input', processInput);
+
+    clearBtn.addEventListener('click', () => {
+      inputEl.value = '';
+      processInput();
+      inputEl.focus();
+
+      const rect = clearBtn.getBoundingClientRect();
+      createSplat(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    });
+  </script>
+</body>
+</html>
