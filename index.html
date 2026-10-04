@@ -336,7 +336,6 @@
       box-shadow: 2px 2px 0px #000;
     }
 
-    /* トースト通知（コピー完了表示） */
     .toast {
       position: absolute;
       top: -45px;
@@ -531,7 +530,7 @@
       lines.forEach((line, index) => {
         const lineStart = currentPos;
         const lineEnd = currentPos + line.length;
-        currentPos = lineEnd + 1; // \n の分を加算
+        currentPos = lineEnd + 1;
 
         const val = parseValue(line);
         if (val !== null) {
@@ -542,13 +541,11 @@
           tag.className = `tag ${val < 0 ? 'negative' : ''}`;
           tag.textContent = (val > 0 ? '+' : '') + val.toLocaleString();
 
-          // 検出数値のタグをタップした時のカーソル移動処理
           tag.addEventListener('click', () => {
             inputEl.focus();
             inputEl.setSelectionRange(lineStart, lineEnd);
 
-            // 該当箇所の行へスクロールさせる計算
-            const lineHeight = 1.2 * 16 * 1.5; // font-size: 1.2rem, line-height: 1.5
+            const lineHeight = 1.2 * 16 * 1.5;
             inputEl.scrollTop = index * lineHeight - 20;
 
             const rect = tag.getBoundingClientRect();
@@ -578,9 +575,10 @@
       }
     }
 
-    // TOTALタップでクリップボードへコピー
+    // TOTALタップでクリップボードへコピー（カンマ区切り形式）
     totalCardEl.addEventListener('click', () => {
-      const valText = currentTotal.toString();
+      const valText = currentTotal.toLocaleString();
+
       navigator.clipboard.writeText(valText).then(() => {
         toastEl.classList.add('show');
         setTimeout(() => toastEl.classList.remove('show'), 1500);
